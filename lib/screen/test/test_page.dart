@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:crm_center_student/screen/const/app_const.dart';
 import 'package:crm_center_student/screen/test/test_show.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:http/http.dart' as http;
 
@@ -32,7 +33,7 @@ class _TestPageState extends State<TestPage> {
         final data = json.decode(response.body);
         return List<Map<String, dynamic>>.from(data['testlar']);
       } else {
-        debugPrint("API xatosi: ${response.statusCode} - ${response.body}");
+        debugPrint("API xatosi: \${response.statusCode} - \${response.body}");
         return [];
       }
     } catch (e) {
@@ -44,45 +45,55 @@ class _TestPageState extends State<TestPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text(
-          'Testlar',
-          style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold, color: Colors.white),
-        ),
+        title: const Text('Testlar',
+            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold,color: Colors.white,),),
         centerTitle: true,
-        backgroundColor: Colors.blue,
+        backgroundColor: Colors.blueAccent,
+        elevation: 5,
       ),
-      body: FutureBuilder<List<Map<String, dynamic>>>(
-        future: fetchTests(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError || !snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(
-              child: Text(
-                "❌ Testlar mavjud emas.",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-              ),
-            );
-          }
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.blue.shade100, Colors.white],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: FutureBuilder<List<Map<String, dynamic>>>(
+          future: fetchTests(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError ||
+                !snapshot.hasData ||
+                snapshot.data!.isEmpty) {
+              return const Center(
+                child: Text(
+                  "❌ Testlar mavjud emas.",
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+                ),
+              );
+            }
 
-          final testlar = snapshot.data!;
-          return ListView.builder(
-            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-            itemCount: testlar.length,
-            itemBuilder: (context, index) {
-              final test = testlar[index];
-              return _buildTestCard(test);
-            },
-          );
-        },
+            final testlar = snapshot.data!;
+            return ListView.builder(
+              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+              itemCount: testlar.length,
+              itemBuilder: (context, index) {
+                final test = testlar[index];
+                return _buildTestCard(test);
+              },
+            );
+          },
+        ),
       ),
     );
   }
 
   Widget _buildTestCard(Map<String, dynamic> test) {
-    List<Map<String, dynamic>> testList = List<Map<String, dynamic>>.from(test['testlar']);
+    List<Map<String, dynamic>> testList =
+        List<Map<String, dynamic>>.from(test['testlar']);
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -99,51 +110,48 @@ class _TestPageState extends State<TestPage> {
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 8),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(15),
+          borderRadius: BorderRadius.circular(20),
+          gradient: LinearGradient(
+            colors: [Colors.blue.shade300, Colors.blue.shade500],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              spreadRadius: 3,
+              color: Colors.black26,
+              spreadRadius: 2,
               blurRadius: 5,
               offset: const Offset(2, 3),
             ),
           ],
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(15),
+          borderRadius: BorderRadius.circular(20),
           child: Material(
-            color: Colors.white,
+            color: Colors.transparent,
             child: InkWell(
-              splashColor: Colors.blue.withOpacity(0.3),
+              splashColor: Colors.white30,
               child: Padding(
-                padding: const EdgeInsets.all(15),
+                padding: const EdgeInsets.all(20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       test['group_name'] ?? "Noma'lum guruh",
                       style: const TextStyle(
-                        fontSize: 20.0,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.black87,
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
                       ),
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 12),
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: const [
-                        Text('Testlar soni', style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.w500)),
-                        Text('Urinishlar', style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.w500)),
-                        Text('To\'g\'ri javoblar', style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.w500)),
-                      ],
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Text("${testList.length}"),
-                        Text("${test['urinishlar'] ?? 0}"),
-                        Text("${test['tugri_javob'] ?? 0}"),
+                        _buildInfoRow("Testlar: ${testList.length}"),
+                        _buildInfoRow("Urinishlar: ${test['urinishlar'] ?? 0}"),
+                        _buildInfoRow("To'g'ri javoblar: ${test['tugri_javob'] ?? 0}"),
                       ],
                     ),
                   ],
@@ -152,6 +160,16 @@ class _TestPageState extends State<TestPage> {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(String text) {
+    return Center(
+      child: Text(
+        text,
+        style: const TextStyle(
+            color: Colors.white, fontSize: 16, fontWeight: FontWeight.w500),
       ),
     );
   }

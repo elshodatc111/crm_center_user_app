@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:crm_center_student/screen/const/app_const.dart';
 import 'package:crm_center_student/screen/video/video_show_page.dart';
 import 'package:flutter/material.dart';
@@ -16,7 +15,7 @@ class VideoPage extends StatefulWidget {
 class _VideoPageState extends State<VideoPage> {
   final String apiUrl = '${AppConstants.apiUrl}/video';
 
-  Future<List<dynamic>> fetchPayments() async {
+  Future<List<dynamic>> fetchVideos() async {
     try {
       final box = GetStorage();
       String? token = box.read('token');
@@ -45,17 +44,18 @@ class _VideoPageState extends State<VideoPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.grey[100],
       appBar: AppBar(
         title: const Text(
-          "Video Darslar",
-          style: TextStyle(fontSize: 22.0, fontWeight: FontWeight.bold,color: Colors.white),
+          "🎥 Video Darslar",
+          style: TextStyle(fontSize: 22.0, fontWeight: FontWeight.bold, color: Colors.white),
         ),
         centerTitle: true,
+        elevation: 5,
         flexibleSpace: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
-              colors: [Colors.blue, Colors.blueAccent],
+              colors: [Color(0xFF1E88E5), Color(0xFF1565C0)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -63,7 +63,7 @@ class _VideoPageState extends State<VideoPage> {
         ),
       ),
       body: FutureBuilder<List<dynamic>>(
-        future: fetchPayments(),
+        future: fetchVideos(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -77,8 +77,14 @@ class _VideoPageState extends State<VideoPage> {
           }
 
           final videos = snapshot.data!;
-          return ListView.builder(
+          return GridView.builder(
             padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+              childAspectRatio: 1.0,
+            ),
             itemCount: videos.length,
             itemBuilder: (context, index) {
               final video = videos[index];
@@ -101,54 +107,55 @@ class _VideoPageState extends State<VideoPage> {
         );
       },
       child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 8),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(15),
+          borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              spreadRadius: 3,
-              blurRadius: 5,
-              offset: const Offset(2, 3),
+              color: Colors.black.withOpacity(0.15),
+              spreadRadius: 2,
+              blurRadius: 6,
+              offset: const Offset(3, 4),
             ),
           ],
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(15),
-          child: Material(
-            color: Colors.white,
-            child: InkWell(
-              splashColor: Colors.blue.withOpacity(0.3),
-              child: Padding(
-                padding: const EdgeInsets.all(15),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 60,
-                      height: 60,
-                      decoration: BoxDecoration(
-                        color: Colors.blueAccent,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: const Icon(Icons.play_circle_fill, color: Colors.white, size: 40),
-                    ),
-                    const SizedBox(width: 15),
-                    Expanded(
-                      child: Text(
-                        video['name'] ?? "Noma'lum video",
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.black87,
-                        ),
-                      ),
-                    ),
-                    const Icon(Icons.arrow_forward_ios, size: 20, color: Colors.grey),
-                  ],
+          borderRadius: BorderRadius.circular(20),
+          child: Stack(
+            children: [
+              Image.network(
+                'https://assets.markup.io/app/uploads/2022/08/Annotate-video-header.jpg',
+                width: double.infinity,
+                height: double.infinity,
+                fit: BoxFit.cover,
+              ),
+              Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.black.withOpacity(0.6), Colors.transparent],
+                    begin: Alignment.bottomCenter,
+                    end: Alignment.topCenter,
+                  ),
                 ),
               ),
-            ),
+              const Center(
+                child: Icon(Icons.play_circle_fill, color: Colors.white, size: 60),
+              ),
+              Positioned(
+                bottom: 10,
+                left: 10,
+                right: 10,
+                child: Text(
+                  video['name'] ?? "Noma'lum video",
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
           ),
         ),
       ),

@@ -1,9 +1,9 @@
 import 'dart:convert';
-
 import 'package:crm_center_student/screen/const/app_const.dart';
 import 'package:flutter/material.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:http/http.dart' as http;
+
 class PaymartPage extends StatefulWidget {
   const PaymartPage({super.key});
 
@@ -18,6 +18,11 @@ class _PaymartPageState extends State<PaymartPage> {
     try {
       final box = GetStorage();
       String? token = box.read('token');
+      if (token == null) {
+        debugPrint("Token topilmadi!");
+        return [];
+      }
+
       final response = await http.get(
         Uri.parse(apiUrl),
         headers: {
@@ -28,13 +33,13 @@ class _PaymartPageState extends State<PaymartPage> {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        return data['paymart'];
+        return data['paymart'] ?? [];
       } else {
-        print("API xatosi: \${response.statusCode} - \${response.body}");
+        debugPrint("API xatosi: ${response.statusCode} - ${response.body}");
         return [];
       }
     } catch (e) {
-      print("Tarmoq xatosi: $e");
+      debugPrint("Tarmoq xatosi: $e");
       return [];
     }
   }
@@ -46,11 +51,7 @@ class _PaymartPageState extends State<PaymartPage> {
       appBar: AppBar(
         title: const Text(
           "To'lovlar",
-          style: TextStyle(
-            fontSize: 20.0,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold,color: Colors.white),
         ),
         centerTitle: true,
         backgroundColor: Colors.blue,
@@ -59,16 +60,14 @@ class _PaymartPageState extends State<PaymartPage> {
         future: fetchPayments(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            print("FutureBuilder xatosi: \${snapshot.error}");
-            return Center(child: Text("Xatolik: \${snapshot.error}"));
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return Center(child: Text("To‘lovlar topilmadi"));
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError || snapshot.data == null || snapshot.data!.isEmpty) {
+            return const Center(child: Text("Hech qanday to‘lov topilmadi"));
           }
 
           final payments = snapshot.data!;
           return ListView.builder(
+            padding: const EdgeInsets.all(12),
             itemCount: payments.length,
             itemBuilder: (context, index) {
               final payment = payments[index];
@@ -79,46 +78,52 @@ class _PaymartPageState extends State<PaymartPage> {
       ),
     );
   }
-}
 
-Widget _buildPaymentCard(Map<String, dynamic> payment) {
-  return Card(
-    color: Colors.white,
-    margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(15),
-    ),
-    elevation: 3,
-    child: Padding(
-      padding: EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text("To'lov",
-                  style:
-                  TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              Text(
-                "${payment['amount']} so‘m",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-            ],
-          ),
-          SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text("To‘lov vaqti: ${payment['created_at'].split('T')[0]}",
-                  style: TextStyle(fontSize: 16)),
-              Text("To‘lov turi: ${payment['paymart_type']}",
-                  style: TextStyle(fontSize: 16)),
-            ],
-          ),
-        ],
+  Widget _buildPaymentCard(Map<String, dynamic> payment) {
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15),
       ),
-    ),
-  );
+      elevation: 4,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  "💰 ${payment['amount']} so‘m",
+                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.green),
+                ),
+                const Chip(
+                  label: Text(
+                    "To‘landi",
+                    style: TextStyle(color: Colors.white, fontSize: 14),
+                  ),
+                  backgroundColor: Colors.green,
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  "📅 Sana: ${payment['created_at'].split('T')[0]}",
+                  style: const TextStyle(fontSize: 16, color: Colors.black87),
+                ),
+                Text(
+                  "🔹 ${payment['paymart_type']}",
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.blueAccent),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
-
