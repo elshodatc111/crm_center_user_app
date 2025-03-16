@@ -1,10 +1,10 @@
 import 'dart:convert';
 
 import 'package:crm_center_student/screen/const/app_const.dart';
+import 'package:crm_center_student/screen/home/group_show_page.dart';
 import 'package:flutter/material.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:http/http.dart' as http;
-import 'package:intl/intl.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -66,7 +66,7 @@ class _HomePageState extends State<HomePage> {
             print("FutureBuilder xatosi: \${snapshot.error}");
             return Center(child: Text("Xatolik: \${snapshot.error}"));
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return Center(child: Text("To‘lovlar topilmadi"));
+            return Center(child: Text("Guruhlar topilmadi"));
           }
 
           final payments = snapshot.data!;
@@ -81,58 +81,68 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-}
 
-Widget _buildPaymentCard(Map<String, dynamic> payment) {
-  return Card(
-    color: Colors.white,
-    margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(15),
-    ),
-    elevation: 3,
-    child: Padding(
-      padding: EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Stack(
+
+  Widget _buildPaymentCard(Map<String, dynamic> payment) {
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => GroupShowPage(id: payment['id']),
+          ),
+        );
+      },
+      child: Card(
+        color: Colors.white,
+        margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(15),
+        ),
+        elevation: 3,
+        child: Padding(
+          padding: EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              ClipRRect(
-                borderRadius: BorderRadius.vertical(
-                  top: Radius.circular(12),
-                ),
-                child: Image.asset(
-                  'assets/images/new.png',
-                  fit: BoxFit.cover,
-                ),
+              Stack(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(12),
+                    ),
+                    child: Image.asset(
+                      'assets/images/new.png',
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 8),
+              Text(
+                "Guruh: " + payment['group_name'],
+                style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.w700),
+              ),
+              SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text("Boshlanish vaqti", style: TextStyle(fontSize: 16)),
+                  Text("Tugash vaqti", style: TextStyle(fontSize: 16)),
+                ],
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text("${payment['lessen_start'].split('T')[0]}",
+                      style: TextStyle(fontSize: 16)),
+                  Text("${payment['lessen_start'].split('T')[0]}",
+                      style: TextStyle(fontSize: 16)),
+                ],
               ),
             ],
           ),
-          SizedBox(height: 8),
-          Text(
-            "Guruh: " + payment['group_name'],
-            style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.w700),
-          ),
-          SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text("Boshlanish vaqti", style: TextStyle(fontSize: 16)),
-              Text("Tugash vaqti", style: TextStyle(fontSize: 16)),
-            ],
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text("${payment['lessen_start'].split('T')[0]}",
-                  style: TextStyle(fontSize: 16)),
-              Text("${payment['lessen_start'].split('T')[0]}",
-                  style: TextStyle(fontSize: 16)),
-            ],
-          ),
-        ],
+        ),
       ),
-    ),
-  );
-}
+    );
+  }}
